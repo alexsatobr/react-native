@@ -1,0 +1,16 @@
+{
+	"test": {
+		"PORT": 3000,
+		"MONGODB_URI": "mongodb://localhost:27017/FlockowAppTest",
+		"JWT_SECRET": "poijasdf98435jpgfdpoij3"
+	},
+	"development": {
+		"PORT": 3000,
+		"MONGODB_URI": "mongodb://localhost:27017/FlockowApp",
+		"JWT_SECRET": "poijasdf98435jpgfdpoij3"
+	},
+	"production": {
+		"PORT": 3000,
+		"MONGODB_URI": "mongodb://alex.satobr:6737Fbue@ds119523.mlab.com:19523/flockow-db"
+	}
+}
