@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "NODE_ENV=development nodemon dist/server.js",
-    "build:watch": "babel -w --out-dir=dist ./src",
+    "start": "nodemon --exec babel-node src/server.js",
+    "dev": "NODE_ENV=development nodemon babel-node src/server.js",
+    "build": "babel -w --out-dir=dist ./src",
     "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",
-    "test-watch": "nodemon --exec 'npm test'"
+    "test-watch": "nodemon --exec 'npm test'",
+    "compile": "babel src --out-dir .compiled --source-maps --watch"
   },
   "engines": {
     "node": "10.7.0"
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@babel/cli": "^7.1.2",
     "@babel/core": "^7.1.2",
+    "@babel/node": "^7.0.0",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.1.0",

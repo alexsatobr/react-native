@@ -4,6 +4,8 @@
 			"@babel/preset-env"
 		]
 	],
+	"sourceMap": "inline",
+	"retainLines": true,
 	"plugins": [
 		["@babel/plugin-proposal-object-rest-spread", {
 			"useBuiltIns": true
