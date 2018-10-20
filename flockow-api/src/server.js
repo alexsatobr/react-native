@@ -17,8 +17,31 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-app.get('/desafios_gerais', (req, res) => {
-	DesafiosGerais.find({}).then((desafios_gerais) => {
+app.get('/desafios_gerais', async (req, res) => {
+	const challengeInterest = req.query.interest;
+	const challengeStage = req.query.stage === '1' || req.query.stage === '2' ? req.query.stage : null;
+	if (challengeInterest && challengeStage) {
+		try {
+			const challengeStageStr = `stage_${challengeStage}`;
+			const challengesByInterest = await DesafiosGerais.aggregate([
+				{$project: {
+					result: {
+						$filter: {
+							input: `$${challengeStageStr}`,
+							as: `${challengeStageStr}`,
+							cond: {$eq: [`$$${challengeStageStr}.interest`, challengeInterest]}
+						}
+					}
+				}}
+			]);	
+			return res.send(...challengesByInterest);
+
+		} catch (err) {
+			return res.status(400).send(err);
+		}
+	}
+
+	return DesafiosGerais.find({}).then((desafios_gerais) => {
 		res.send(desafios_gerais[0]);
 	}, (e) => {
 		res.status(400).send(e);
@@ -43,7 +66,7 @@ app.post('/desafios_gerais', async (req, res) => {
 			await DesafiosGerais.findOneAndUpdate({}, {$inc: {...sumOfChallengesByTypeObj}, $push: challengeObj }, { upsert: true });
 			const receivedChallenges = await DesafiosGerais.find({});
 
-			return res.send(receivedChallenges);
+			return res.send(...receivedChallenges);
 
 		} catch (err) {
 			return res.status(400).send(err);
@@ -54,8 +77,18 @@ app.post('/desafios_gerais', async (req, res) => {
 
 });
 
-app.get('/desafios_comunidade', (req, res) => {
-	DesafiosComunidade.find({}).then((desafios_comunidade) => {
+app.get('/desafios_comunidade', async (req, res) => {
+	const challengeId = req.query.challengeId;
+	if (challengeId) {
+		return await DesafiosComunidade.find({ 'stage_3.id': challengeId}, {_id: 0, 'stage_3.$': 1}, (err, suc) => {
+			if (suc && suc[0] && suc[0].stage_3 && suc[0].stage_3[0]) {
+				return res.send(suc[0].stage_3[0]);
+			} else {
+				return res.status(400).send(err);		
+			}
+		});
+	}
+	return DesafiosComunidade.find({}).then((desafios_comunidade) => {
 		res.send(desafios_comunidade[0]);
 	}, (e) => {
 		res.status(400).send(e);
@@ -63,25 +96,12 @@ app.get('/desafios_comunidade', (req, res) => {
 });
 
 app.post('/desafios_comunidade', async (req, res) => {
-	// const challengeStage = req.query.stage === '1' || req.query.stage === '2' ? req.query.stage : null;
-	// const challengeType = req.query.type;
-	//rating like or dislike
 	const challengeRating = req.query.rating;
 	const challengeId = req.query.challengeId;
-	// const hasOnlyOneQParam = Object.keys(req.query).length === 1;
-
 	if (challengeRating && challengeId) {
 		try {
 			const rating = challengeRating === 'likes' ? 'likes' : 'dislikes';
-			const ratingKey = `stage_3.$.rating.${rating}`;
-			await DesafiosComunidade.find({ 'stage_3.id': challengeId},  {_id: 0, 'stage_3.$': 1}, (err, suc) => {
-			// await DesafiosComunidade.find({'stage_3.id': challengeId}, (err, suc) => {
-				if (suc) {
-					console.log(suc[0].stage_3[0]);
-					// console.log(suc[0].stage_3[0].toObject());
-				}
-			});
-			// console.log(find); 
+			const ratingKey = `stage_3.$.rating.${rating}`;			
 			await DesafiosComunidade.findOneAndUpdate({'stage_3.id': challengeId}, {$inc: {[ratingKey]: 1}}, { upsert: true });
 			const receivedChallenges = await DesafiosComunidade.find({});
 			return res.send(receivedChallenges);
@@ -89,9 +109,6 @@ app.post('/desafios_comunidade', async (req, res) => {
 			return res.status(400).send(err);
 		}
 	}
-	// const challengeType = `stage_${challengeStage}`;
-	// const sumOfChallengesByType = `stage_${challengeStage}_total`;
-	// let sumOfChallengesByTypeObj = {[sumOfChallengesByType]: 1};
 
 	try {
 		const getSumOfChallenges = await DesafiosComunidade.find({}, {total_challenges: 1});
@@ -105,51 +122,8 @@ app.post('/desafios_comunidade', async (req, res) => {
 	} catch (err) {
 		return res.status(400).send(err);
 	}
-s
 });
 
-
-
-app.post('/todos', authenticate, (req, res) => {
-	const todo = new Todo({
-		text: req.body.text,
-		_creator: req.user._id
-	});
-	todo.save().then((doc) => {
-		res.send(doc);
-	}, (e) => {
-		res.status(400).send(e);
-	});
-});
-
-app.get('/todos', authenticate, (req, res) => {
-	Todo.find({
-		_creator: req.user._id
-	}).then((todos) => {
-		res.send({todos});
-	}, (e) => {
-		res.status(400).send(e);
-	});
-});
-
-app.get('/todos/:id', authenticate, (req, res) => {
-	const id = req.params.id;
-	if (!ObjectID.isValid(id)){
-		return res.status(404).send();
-	}
-
-	Todo.findOne({
-		_id: id,
-		_creator: req.user._id
-	}).then((todo) => {
-		if (!todo) {
-			return res.status(404).send();
-		}
-		res.send({todo});
-	}).catch((e) => {
-		res.status(400).send();
-	});
-});
 
 app.delete('/todos/:id', authenticate, async (req, res) => {
 	const id = req.params.id;
