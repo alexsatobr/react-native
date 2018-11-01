@@ -1,0 +1,43 @@
+{
+  "name": "empty-project-template",
+  "main": "node_modules/expo/AppEntry.js",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "eject": "expo eject",
+    "react-devtool": "react-devtools"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "expo": "^30.0.1",
+    "lodash": "^4.17.11",
+    "lottie-react-native": "^2.5.9",
+    "react": "^16.6.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
+    "react-native-app-intro-slider": "^1.0.1",
+    "react-native-communications": "^2.2.1",
+    "react-navigation": "^2.18.1",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.1",
+    "redux-persist": "^5.10.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/runtime": "^7.0.0",
+    "babel-jest": "23.6.0",
+    "babel-preset-react-native": "^4.0.1",
+    "babel-preset-react-native-stage-0": "^1.0.1",
+    "eslint": "^5.8.0",
+    "jest": "23.6.0",
+    "metro-react-native-babel-preset": "^0.48.1",
+    "react-devtools": "^3.4.2",
+    "react-test-renderer": "^16.6.0",
+    "redux-devtools-extension": "^2.13.5"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}
