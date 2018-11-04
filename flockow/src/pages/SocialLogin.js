@@ -24,7 +24,7 @@ export default class SocialLogin extends Component {
 		}
 		this.loginGoogle = this.loginGoogle.bind(this);
 		this.loginFacebook = this.loginFacebook.bind(this);
-		this.persistStorage = this.persistStorage.bind(this);
+		// this.persistStorage = this.persistStorage.bind(this);
 	}
 
 	async loginFacebook () {

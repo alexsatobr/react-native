@@ -2,11 +2,8 @@ import {
 	FETCH,
 	FETCH_USER_SUCCESS,
 	FETCH_USER_ERROR,
-	SELECT_INTERESTS
-} from '../actions';
-
-import {
-	LOGOUT
+	SELECT_INTERESTS,
+	FIRST_ACCESS_NAME
 } from '../actions';
 
 export default (state = {}, action) => {
@@ -16,7 +13,7 @@ export default (state = {}, action) => {
 				...state
 			};
 		case FETCH_USER_SUCCESS: 
-			return action.user
+			return {...state.name, ...action.user}
 		case FETCH_USER_ERROR:
 			return {
 				...state,
@@ -27,6 +24,8 @@ export default (state = {}, action) => {
 				...state,
 				interests: action.interests
 			};
+		case FIRST_ACCESS_NAME:
+			return {...state, name: action.name}
 		default: 
 			return state;
 	}
