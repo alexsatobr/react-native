@@ -7,7 +7,9 @@ const DesafiosGerais = mongoose.model('Desafios_Gerais', {
 			descricao: String,
 			interest: String,
 			difficult: String,
-			createdAt: Number
+			createdAt: String,
+			timeZone: String,
+			dateTzUtc: String
 		}
 	],
 	stage_1_total: Number,
@@ -17,7 +19,9 @@ const DesafiosGerais = mongoose.model('Desafios_Gerais', {
 			descricao: String,
 			interest: String,
 			difficult: String,
-			createdAt: Number
+			createdAt: String,
+			timeZone: String,
+			dateTzUtc: String
 		}
 	],
 	stage_2_total: Number,

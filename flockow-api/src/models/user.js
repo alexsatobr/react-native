@@ -17,6 +17,13 @@ const UserSchema = new mongoose.Schema({
 			message: '{VALUE} is not a valid email'
 		}
 	},
+	displayName: String,
+	fullname: String,
+	avatar: String,
+	providerData: {
+		uid: String,
+		provider: String,
+	},
 	password: {
 		type: String,
 		required: true,
@@ -31,6 +38,42 @@ const UserSchema = new mongoose.Schema({
 			type: String,
 			required: true
 		}
+	}],
+	createdAt: Number,
+	completed_challenges: {
+		Sum: Number,
+		A: Number,
+		B: Number,
+		C: Number
+	},
+	created_challenges: {
+		Sum: Number,
+		C: Number
+	},
+	created_challenge_list: [{
+		id: Number,
+		description: String,
+		createdAt: Number
+	}],
+	stage_1_completed_list: [{
+		id: Number,
+		description: String,
+		createdAt: Number
+	}],
+	stage_2_completed_list: [{
+		id: Number,
+		description: String,
+		createdAt: Number
+	}],
+	stage_3_completed_list: [{
+		id: Number,
+		description: String,
+		createdAt: Number
+	}],
+	badges: [{
+		id: Number,
+		description: String,
+		createdAt: String
 	}]
 });
 
@@ -41,15 +84,13 @@ UserSchema.methods.toJSON = function () {
 	return _.pick(userObject, ['_id', 'email']);
 };
 
-
 UserSchema.methods.generateAuthToken = function () {
 	const user = this;
 	const access = 'auth';
 	let token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
-
 	// user.tokens = user.tokens.concat([{access, token}]);
 	user.tokens.push({access, token});
-
+	
 	return user.save().then(() => {
 		return token;
 	});

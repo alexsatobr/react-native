@@ -11,14 +11,45 @@ import {User} from './models/user';
 import {DesafiosGerais} from './models/desafios';
 import {DesafiosComunidade} from './models/DesafiosComunidade';
 import {authenticate} from './middleware/authenticate';
+
+import * as AuthController from './controllers/authController';
+
+import MomentTz from './utils/helpers/momentTz';
+
+
+
+const passport = require('passport'), FacebookStrategy = require('passport-facebook').Strategy;
+
+passport.use(new FacebookStrategy({
+	clientID: 2045886269056862,
+	clientSecret: '59684ab904b9c4b662f39bba67cabe61',
+	callbackURL: 'http://localhost:3000/auth/facebook/callback/'
+},
+function(accessToken, refreshToken, profile, done) {
+	console.log('AAA', accessToken, profile);
+	// User.findOrCreate({ facebookId: profile.id }, function(err, user) {
+	// 	if (err) { return done(err); }
+	// 	done(null, user);
+	// done(null, user)
+	// });
+}
+));
+
 // import 'babel-polyfill';
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(bodyParser.json());
+
+
+app.post('/users/socialauth', AuthController.loginWithAuth);
 
 app.get('/desafios_gerais', async (req, res) => {
 	const challengeInterest = req.query.interest;
+	const challengeInterestArr = challengeInterest && challengeInterest.split(' ');
 	const challengeStage = req.query.stage === '1' || req.query.stage === '2' ? req.query.stage : null;
 	if (challengeInterest && challengeStage) {
 		try {
@@ -29,7 +60,8 @@ app.get('/desafios_gerais', async (req, res) => {
 						$filter: {
 							input: `$${challengeStageStr}`,
 							as: `${challengeStageStr}`,
-							cond: {$eq: [`$$${challengeStageStr}.interest`, challengeInterest]}
+							cond: {$in: [`$$${challengeStageStr}.interest`, challengeInterestArr]}
+							// cond: {$eq: [`$$${challengeStageStr}.interest`, challengeInterest]}
 						}
 					}
 				}}
@@ -50,13 +82,14 @@ app.get('/desafios_gerais', async (req, res) => {
 
 app.post('/desafios_gerais', async (req, res) => {
 	const challengeStage = req.query.stage === '1' || req.query.stage === '2' ? req.query.stage : null;
-	const challengeType = req.query.type;
-	const challengeDifficulty = req.query.difficulty;
+	// const challengeType = req.query.type;
+	// const challengeDifficulty = req.query.difficulty;
 
-	if (challengeStage && challengeType && challengeDifficulty) {
+	if (challengeStage) {
 		const challengeType = `stage_${challengeStage}`;
 		const sumOfChallengesByType = `stage_${challengeStage}_total`;
 		let sumOfChallengesByTypeObj = {[sumOfChallengesByType]: 1};
+		req.body.dateTzUtc = MomentTz(req.body.createdAt, req.body.timeZone);
 		let challengeObj = {[challengeType]: req.body};
 
 		try {
@@ -98,6 +131,7 @@ app.get('/desafios_comunidade', async (req, res) => {
 app.post('/desafios_comunidade', async (req, res) => {
 	const challengeRating = req.query.rating;
 	const challengeId = req.query.challengeId;
+	req.body.dateTzUtc = MomentTz(req.body.createdAt, req.body.timeZone);
 	if (challengeRating && challengeId) {
 		try {
 			const rating = challengeRating === 'likes' ? 'likes' : 'dislikes';
@@ -184,27 +218,22 @@ app.post('/users', async (req, res) => {
 	}
 });
 
-app.get('/users/me', authenticate, async (req, res) => {
-	// try {
-	// 	const id = '5bb2ddb4c6fa840a7326a5bb';
-	// 	const td = await Todo.findOne({
-	// 		_id: id,
-	// 		_creator: '5bb2dc88c6fa840a7326a5b9'
-	// 	}).then((todo) => {
-	// 		if (!todo) {
-	// 			return res.status(404).send();
-	// 		}
-	// 		res.send({todo});
-	// 	}).catch((e) => {
-	// 		console.log(e);
-	// 		res.status(400).send();
-	// 	});
-		
-	// 	res.send(td);
-	// } catch(e) {
-	// 	console.log(e);
-	// }
-	res.send(req.user);
+app.get('/users/details', authenticate, async (req, res) => {
+	const userObj = {
+		name: req.user.displayName,
+		avatar: req.user.avatar,
+		email: req.user.email,
+		provider: req.user.providerData.provider,
+		id: req.user._id,
+		completed_challenges: req.user.completed_challenges,
+		created_challenges: req.user.created_challenges,
+		created_challenge_list: req.user.created_challenge_list,
+		stage_1_completed_list: req.user.stage_1_completed_list,
+		stage_2_completed_list: req.user.stage_2_completed_list,
+		stage_3_completed_list: req.user.stage_3_completed_list,
+		badges: req.user.badges
+	};
+	res.send(userObj);
 });
 
 app.post('/users/login', async (req, res) => {

@@ -11,7 +11,9 @@ const DesafiosComunidade = mongoose.model('Desafios_Comunidade', {
 				likes: Number,
 				dislikes: Number
 			},
-			createdAt: Number,
+			createdAt: String,
+			timeZone: String,
+			dateTzUtc: String,
 			createdBy: String,
 			userIdBy: Number
 		}
